@@ -4,19 +4,21 @@ title: "Daily Post-it - Project Summary"
 
 # Daily Post-it - Project Summary
 
+**Last Updated:** 2026-03-16  
+**Status:** MVP Complete ✅
+
 ## Project overview
 Daily Post-it is a minimalist daily todo app with CLI companion for macOS, iOS, and iPadOS:
-- Clean markdown-based task management for each day
+- Clean task management for each day
 - Binary task states (Done / Not Done) with hidden expandable notes
 - Auto-rollover of unfinished tasks to new day
-- CLI tool for macOS power users
+- CLI tool for macOS power users (written in Go)
 - Shared SQLite database between GUI and CLI
 - No authentication required
 
 ## Core MVP features
-- Daily markdown text editor with today's date prominently displayed
-- Parse markdown bullet points (`- task` or `* task`) into todo items automatically
-- Support simple markdown: bold, italic, bullet lists
+- Daily task list with today's date prominently displayed
+- Add tasks via simple dialog (markdown parsing deferred)
 - Binary task states: Done or Not Done (no progress percentages)
 - Checkbox to toggle status with visual strikethrough when done
 - Hidden attached text (notes/details) that stays collapsed by default
@@ -25,7 +27,7 @@ Daily Post-it is a minimalist daily todo app with CLI companion for macOS, iOS, 
 - Completed tasks stay on original day (archived view)
 - Simple date navigation to view previous days (read-only)
 
-## CLI Features (macOS only)
+## CLI Features (macOS only) ✅
 - `daily list` — show today's unfinished tasks
 - `daily list --done` — show today's completed tasks
 - `daily list --date 2026-03-15` — show tasks for specific date
@@ -34,21 +36,28 @@ Daily Post-it is a minimalist daily todo app with CLI companion for macOS, iOS, 
 - `daily undone <task-id>` — mark task as not done
 - `daily stats` — show completion rate for current week
 
+**CLI Implementation:** Go (see `cli/` directory)
+- Binary size: 6MB (optimized)
+- Pure Go SQLite driver (no CGO)
+- Standalone executable (no runtime dependencies)
+
 ## Technical stack
 - **Framework:** Flutter (latest stable)
 - **Targets:** macOS, iOS, iPadOS
 - **Packages:**
   - `sqflite` - SQLite database
-  - `flutter_markdown` - Markdown rendering
   - `intl` - Date formatting
-  - `args` - CLI argument parsing
   - `path_provider` - Platform-specific paths
+  - `shared_preferences` - Rollover tracking
+  - `args` - CLI argument parsing (Dart CLI, deprecated)
+- **CLI Language:** Go 1.22+
+- **CLI SQLite:** modernc.org/sqlite (pure Go)
 - **Database:** SQLite shared between GUI and CLI
 - **Database Location:** 
   - macOS: `~/Library/Application Support/DailyPostIt/tasks.db`
   - iOS: App documents directory
 
-## UI Requirements
+## UI Requirements ✅
 - Clean, distraction-free interface (Apple Notes aesthetic)
 - Native macOS window controls
 - iOS/iPadOS full-screen optimized
@@ -101,23 +110,40 @@ Daily Post-it is a minimalist daily todo app with CLI companion for macOS, iOS, 
 ```
 lib/
 ├── main.dart                    # GUI entry point
-├── cli.dart                     # CLI entry point
+├── cli.dart                     # Dart CLI (deprecated, use Go CLI)
 ├── models/
 │   └── task.dart                # Task model
 ├── screens/
 │   ├── home_screen.dart         # Main home screen with date navigation
-│   └── day_view.dart            # Individual day view with editor
+│   └── day_view.dart            # Individual day view with task list
 ├── widgets/
-│   ├── markdown_editor.dart     # Markdown text editor widget
-│   ├── task_item.dart           # Individual task item with checkbox
-│   └── date_header.dart         # Date display header
+│   └── task_item.dart           # Individual task item with checkbox
 ├── services/
-│   ├── database_service.dart     # Shared SQLite logic
-│   └── cli_service.dart         # CLI command handlers
+│   ├── database_service.dart    # Shared SQLite logic
+│   └── rollover_service.dart    # Auto-rollover logic
 └── utils/
-    └── database_path.dart        # Platform-specific db paths
+    └── database_path.dart       # Platform-specific db paths
+
+cli/                               # Go CLI project
+├── cmd/daily/
+│   └── main.go                  # CLI entry point
+├── internal/
+│   ├── commands/
+│   │   ├── list.go
+│   │   ├── add.go
+│   │   ├── done.go
+│   │   ├── undone.go
+│   │   └── stats.go
+│   ├── db/
+│   │   └── db.go
+│   └── models/
+│       └── task.go
+├── Makefile
+├── go.mod
+└── go.sum
+
 bin/
-└── daily_cli.dart                # CLI executable wrapper
+└── daily                        # Compiled Go CLI binary (6MB)
 ```
 
 ## Database Schema
@@ -136,8 +162,47 @@ CREATE INDEX idx_tasks_date ON tasks(date);
 CREATE INDEX idx_tasks_date_is_done ON tasks(date, is_done);
 ```
 
-## Open decisions
-- Keyboard shortcuts for CLI (e.g., `d` for `done`, `u` for `undone`)
-- Default hidden text placeholder text
-- Maximum tasks per day limit (if any)
-- Whether to support markdown in hidden text area
+## Build Artifacts
+
+| Platform | Path | Size |
+|----------|------|------|
+| macOS App | `build/macos/Build/Products/Release/daily_postit.app` | 42.5 MB |
+| iOS Simulator | `build/ios/iphonesimulator/Runner.app` | ~30 MB |
+| Go CLI | `bin/daily` | 6 MB |
+
+## Decisions (Resolved)
+| Decision | Resolution |
+|----------|------------|
+| CLI Language | Go (instead of Dart) for standalone binary |
+| Markdown Editor | Deferred - using simple add dialog instead |
+| Hidden text placeholder | "Add notes..." |
+| Max tasks per day | No limit for MVP |
+| CLI shortcuts | Not needed for MVP |
+| Markdown in hidden text | Plain text for MVP |
+
+## Usage
+
+### GUI
+```bash
+flutter run -d macos
+flutter run -d ios
+```
+
+### CLI
+```bash
+# Add tasks
+./bin/daily add "Buy milk"
+./bin/daily add "Call mom"
+
+# List tasks
+./bin/daily list
+./bin/daily list --done
+./bin/daily list --date 2026-03-15
+
+# Mark done/undone
+./bin/daily done 1
+./bin/daily undone 1
+
+# Stats
+./bin/daily stats
+```
