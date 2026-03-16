@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/database_service.dart';
+import '../services/rollover_service.dart';
 import '../models/task.dart';
 import 'day_view.dart';
 
@@ -24,8 +25,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _checkAndRollover() async {
-    // TODO: Implement rollover logic
-    // This will be done in a separate commit
+    final rolloverService = RolloverService(DatabaseService.instance);
+    final rolledOver = await rolloverService.checkAndRollover();
+    
+    if (rolledOver && mounted) {
+      // Show a snackbar to inform user
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unfinished tasks from yesterday moved to today'),
+          duration: Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   Future<void> _loadTasks() async {
