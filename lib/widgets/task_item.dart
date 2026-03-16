@@ -22,6 +22,7 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
   bool _isExpanded = false;
   late AnimationController _expandController;
   late Animation<double> _expandAnimation;
+  late TextEditingController _hiddenTextController;
 
   @override
   void initState() {
@@ -34,11 +35,22 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
       parent: _expandController,
       curve: Curves.easeInOut,
     );
+    _hiddenTextController = TextEditingController(text: widget.task.hiddenText ?? '');
+  }
+
+  @override
+  void didUpdateWidget(TaskItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update controller text if task changed externally (e.g., from CLI)
+    if (oldWidget.task.hiddenText != widget.task.hiddenText) {
+      _hiddenTextController.text = widget.task.hiddenText ?? '';
+    }
   }
 
   @override
   void dispose() {
     _expandController.dispose();
+    _hiddenTextController.dispose();
     super.dispose();
   }
 
@@ -190,7 +202,7 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
                         )
                       : const SizedBox.shrink())
                   : TextField(
-                      controller: TextEditingController(text: widget.task.hiddenText ?? ''),
+                      controller: _hiddenTextController,
                       decoration: InputDecoration(
                         hintText: 'Add notes...',
                         hintStyle: TextStyle(
