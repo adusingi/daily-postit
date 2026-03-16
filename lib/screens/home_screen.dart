@@ -111,100 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
            _selectedDate.day == now.day;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF5F5F7),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Date Header
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
-                border: Border(
-                  bottom: BorderSide(
-                    color: isDark ? const Color(0xFF3A3A3C) : const Color(0xFFE5E5EA),
-                    width: 1,
-                  ),
-                ),
-              ),
-              child: Row(
-                children: [
-                  // Previous day button
-                  IconButton(
-                    onPressed: _goToPreviousDay,
-                    icon: const Icon(Icons.chevron_left),
-                    tooltip: 'Previous day',
-                  ),
-                  
-                  // Date display
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: _showDatePicker,
-                      child: Column(
-                        children: [
-                          Text(
-                            _formatDate(_selectedDate),
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              color: theme.colorScheme.onSurface,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          if (!_isToday)
-                            Text(
-                              DateFormat('MMM d, y').format(_selectedDate),
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: theme.colorScheme.onSurface.withOpacity(0.6),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  
-                  // Next day button
-                  IconButton(
-                    onPressed: _isToday ? null : _goToNextDay,
-                    icon: const Icon(Icons.chevron_right),
-                    tooltip: 'Next day',
-                  ),
-                ],
-              ),
-            ),
-            
-            // Day View
-            Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : DayView(
-                      date: _selectedDate,
-                      tasks: _tasks,
-                      isReadOnly: !_isToday,
-                      onTasksChanged: _loadTasks,
-                    ),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: _isToday
-          ? FloatingActionButton.extended(
-              onPressed: () => _showAddTaskDialog(context),
-              icon: const Icon(Icons.add),
-              label: const Text('Add Task'),
-            )
-          : null,
-    );
-  }
-
-  Future<void> _showAddTaskDialog(BuildContext context) async {
+  Future<void> _showAddTaskDialog() async {
     final controller = TextEditingController();
     
     final result = await showDialog<String>(
@@ -246,5 +153,105 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     
     controller.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF5F5F7),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Date Header
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+                border: Border(
+                  bottom: BorderSide(
+                    color: isDark ? const Color(0xFF3A3A3C) : const Color(0xFFE5E5EA),
+                    width: 1,
+                  ),
+                ),
+              ),
+              child: Row(
+                children: [
+                  // Add button (top left)
+                  if (_isToday)
+                    IconButton(
+                      onPressed: _showAddTaskDialog,
+                      icon: const Icon(Icons.add),
+                      tooltip: 'Add task',
+                    )
+                  else
+                    const SizedBox(width: 48), // Spacer for alignment
+                  
+                  // Previous day button
+                  IconButton(
+                    onPressed: _goToPreviousDay,
+                    icon: const Icon(Icons.chevron_left),
+                    tooltip: 'Previous day',
+                  ),
+                  
+                  // Date display
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: _showDatePicker,
+                      child: Column(
+                        children: [
+                          Text(
+                            _formatDate(_selectedDate),
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          if (!_isToday)
+                            Text(
+                              DateFormat('MMM d, y').format(_selectedDate),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  // Next day button
+                  IconButton(
+                    onPressed: _isToday ? null : _goToNextDay,
+                    icon: const Icon(Icons.chevron_right),
+                    tooltip: 'Next day',
+                  ),
+                  
+                  // Spacer for symmetry
+                  const SizedBox(width: 48),
+                ],
+              ),
+            ),
+            
+            // Day View
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : DayView(
+                      date: _selectedDate,
+                      tasks: _tasks,
+                      isReadOnly: !_isToday,
+                      onTasksChanged: _loadTasks,
+                      onAddTask: _isToday ? _showAddTaskDialog : null,
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -7,6 +7,7 @@ class DayView extends StatelessWidget {
   final List<Task> tasks;
   final bool isReadOnly;
   final VoidCallback onTasksChanged;
+  final VoidCallback? onAddTask;
 
   const DayView({
     super.key,
@@ -14,6 +15,7 @@ class DayView extends StatelessWidget {
     required this.tasks,
     required this.isReadOnly,
     required this.onTasksChanged,
+    this.onAddTask,
   });
 
   @override
@@ -38,14 +40,14 @@ class DayView extends StatelessWidget {
                 color: theme.colorScheme.onSurface.withOpacity(0.6),
               ),
             ),
-            if (!isReadOnly) ...[
-              const SizedBox(height: 8),
-              Text(
-                'Tap + to add your first task',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: theme.colorScheme.onSurface.withOpacity(0.4),
-                ),
+            if (!isReadOnly && onAddTask != null) ...[
+              const SizedBox(height: 16),
+              IconButton(
+                onPressed: onAddTask,
+                icon: const Icon(Icons.add),
+                iconSize: 32,
+                color: theme.colorScheme.primary,
+                tooltip: 'Add task',
               ),
             ],
           ],
@@ -59,8 +61,24 @@ class DayView extends StatelessWidget {
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: notDoneTasks.length + doneTasks.length + (doneTasks.isNotEmpty ? 1 : 0),
+      itemCount: notDoneTasks.length + doneTasks.length + (doneTasks.isNotEmpty ? 1 : 0) + (onAddTask != null ? 1 : 0),
       itemBuilder: (context, index) {
+        // Show add button at the end if there are tasks
+        if (onAddTask != null && index == _getTotalItemCount(notDoneTasks.length, doneTasks.length)) {
+          return Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: Center(
+              child: IconButton(
+                onPressed: onAddTask,
+                icon: const Icon(Icons.add),
+                iconSize: 28,
+                color: theme.colorScheme.primary,
+                tooltip: 'Add task',
+              ),
+            ),
+          );
+        }
+
         // Show completed section header
         if (doneTasks.isNotEmpty && index == notDoneTasks.length) {
           return Padding(
@@ -91,5 +109,14 @@ class DayView extends StatelessWidget {
         );
       },
     );
+  }
+
+  int _getTotalItemCount(int notDoneCount, int doneCount) {
+    int count = notDoneCount;
+    if (doneCount > 0) {
+      count += 1; // Header
+      count += doneCount;
+    }
+    return count;
   }
 }
