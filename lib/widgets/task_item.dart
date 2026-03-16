@@ -23,6 +23,7 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
   late AnimationController _expandController;
   late Animation<double> _expandAnimation;
   late TextEditingController _hiddenTextController;
+  late FocusNode _textFocusNode;
 
   @override
   void initState() {
@@ -36,21 +37,37 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
       curve: Curves.easeInOut,
     );
     _hiddenTextController = TextEditingController(text: widget.task.hiddenText ?? '');
+    _textFocusNode = FocusNode();
+    
+    // Listen to focus changes to keep expanded when typing
+    _textFocusNode.addListener(_onFocusChange);
   }
 
   @override
   void didUpdateWidget(TaskItem oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Update controller text if task changed externally (e.g., from CLI)
-    if (oldWidget.task.hiddenText != widget.task.hiddenText) {
+    // Only update text if not currently focused and text changed externally
+    if (!_textFocusNode.hasFocus && oldWidget.task.hiddenText != widget.task.hiddenText) {
       _hiddenTextController.text = widget.task.hiddenText ?? '';
+    }
+  }
+
+  void _onFocusChange() {
+    if (_textFocusNode.hasFocus && !_isExpanded) {
+      // Auto-expand when text field gets focus
+      setState(() {
+        _isExpanded = true;
+        _expandController.forward();
+      });
     }
   }
 
   @override
   void dispose() {
+    _textFocusNode.removeListener(_onFocusChange);
     _expandController.dispose();
     _hiddenTextController.dispose();
+    _textFocusNode.dispose();
     super.dispose();
   }
 
@@ -105,12 +122,18 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
       ),
       child: Column(
         children: [
-          // Main task row
-          InkWell(
+          // Main task row - NOT using InkWell to avoid tap conflicts
+          GestureDetector(
             onTap: widget.isReadOnly ? null : _toggleDone,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            child: Padding(
+            behavior: HitTestBehavior.translucent,
+            child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.vertical(
+                  top: const Radius.circular(12),
+                  bottom: _isExpanded ? Radius.zero : const Radius.circular(12),
+                ),
+              ),
               child: Row(
                 children: [
                   // Checkbox
@@ -157,22 +180,28 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
                     ),
                   ),
                   
-                  // Expand button (if not read-only or has hidden text)
+                  // Expand button
                   if (!widget.isReadOnly || hasHiddenText)
-                    IconButton(
-                      onPressed: _toggleExpand,
-                      icon: AnimatedRotation(
-                        turns: _isExpanded ? 0.5 : 0,
-                        duration: const Duration(milliseconds: 250),
-                        child: Icon(
-                          hasHiddenText ? Icons.notes : Icons.expand_more,
-                          size: 20,
-                          color: hasHiddenText
-                              ? theme.colorScheme.primary
-                              : theme.colorScheme.onSurface.withOpacity(0.4),
+                    Material(
+                      type: MaterialType.transparency,
+                      child: InkWell(
+                        onTap: _toggleExpand,
+                        borderRadius: BorderRadius.circular(20),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: AnimatedRotation(
+                            turns: _isExpanded ? 0.5 : 0,
+                            duration: const Duration(milliseconds: 250),
+                            child: Icon(
+                              hasHiddenText ? Icons.notes : Icons.expand_more,
+                              size: 20,
+                              color: hasHiddenText
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.onSurface.withOpacity(0.4),
+                            ),
+                          ),
                         ),
                       ),
-                      tooltip: _isExpanded ? 'Collapse' : 'Expand',
                     ),
                 ],
               ),
@@ -193,30 +222,44 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
               ),
               child: widget.isReadOnly
                   ? (hasHiddenText
-                      ? Text(
-                          widget.task.hiddenText!,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: theme.colorScheme.onSurface.withOpacity(0.7),
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Text(
+                            widget.task.hiddenText!,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: theme.colorScheme.onSurface.withOpacity(0.7),
+                            ),
                           ),
                         )
                       : const SizedBox.shrink())
-                  : TextField(
-                      controller: _hiddenTextController,
-                      decoration: InputDecoration(
-                        hintText: 'Add notes...',
-                        hintStyle: TextStyle(
-                          color: theme.colorScheme.onSurface.withOpacity(0.4),
+                  : GestureDetector(
+                      // Prevent tap from bubbling up to parent
+                      onTap: () {
+                        _textFocusNode.requestFocus();
+                      },
+                      behavior: HitTestBehavior.opaque,
+                      child: TextField(
+                        controller: _hiddenTextController,
+                        focusNode: _textFocusNode,
+                        decoration: InputDecoration(
+                          hintText: 'Add notes...',
+                          hintStyle: TextStyle(
+                            color: theme.colorScheme.onSurface.withOpacity(0.4),
+                          ),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 8),
                         ),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.zero,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: theme.colorScheme.onSurface.withOpacity(0.8),
+                        ),
+                        maxLines: null,
+                        keyboardType: TextInputType.multiline,
+                        textInputAction: TextInputAction.newline,
+                        textCapitalization: TextCapitalization.sentences,
+                        onChanged: _updateHiddenText,
                       ),
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: theme.colorScheme.onSurface.withOpacity(0.8),
-                      ),
-                      maxLines: null,
-                      onChanged: _updateHiddenText,
                     ),
             ),
           ),
