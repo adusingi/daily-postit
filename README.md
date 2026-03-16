@@ -1,0 +1,75 @@
+# Daily Post-it
+
+A minimalist daily todo app with CLI companion for macOS, iOS, and iPadOS.
+
+## Features
+
+- Clean markdown-based task management for each day
+- Binary task states (Done / Not Done) with hidden expandable notes
+- Auto-rollover of unfinished tasks to new day
+- CLI tool for macOS power users
+- Shared SQLite database between GUI and CLI
+- No authentication required
+
+## Getting Started
+
+### Prerequisites
+
+- Flutter SDK (3.29.0+)
+- macOS 11.0+ or iOS 15.0+
+
+### Installation
+
+```bash
+flutter pub get
+flutter run -d macos
+```
+
+### CLI Usage
+
+```bash
+# Show today's tasks
+daily list
+
+# Add a new task
+daily add "Buy groceries"
+
+# Mark task as done
+daily done 1
+
+# Show weekly stats
+daily stats
+```
+
+## Development
+
+### Directory Structure
+
+```
+lib/
+├── main.dart                    # GUI entry point
+├── cli.dart                     # CLI entry point
+├── models/
+│   └── task.dart                # Task model
+├── screens/
+│   ├── home_screen.dart         # Main home screen
+│   └── day_view.dart            # Day view
+├── widgets/
+│   ├── markdown_editor.dart     # Markdown editor
+│   ├── task_item.dart           # Task item widget
+│   └── date_header.dart         # Date header
+├── services/
+│   ├── database_service.dart    # Shared SQLite logic
+│   └── cli_service.dart         # CLI handlers
+└── utils/
+    └── database_path.dart       # Platform-specific paths
+```
+
+### Database Location
+
+- **macOS:** `~/Library/Application Support/DailyPostIt/tasks.db`
+- **iOS:** App documents directory
+
+## License
+
+MIT License

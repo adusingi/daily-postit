@@ -1,0 +1,37 @@
+name: daily_postit
+description: A minimalist daily todo app with CLI companion
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  sqflite: ^2.3.0
+  flutter_markdown: ^0.6.18
+  intl: ^0.19.0
+  path_provider: ^2.1.1
+  args: ^2.4.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  # assets:
+  #   - assets/
+
+  # For details regarding other assets, see the documentation:
+  # https://flutter.dev/assets/images-for-design-packages/
+
+  # An image asset can refer to one or more resolution-specific "variants", see
+  # https://flutter.dev/assets#resolution-aware
+
+  # For details regarding fonts, see the documentation:
+  # https://flutter.dev/custom-fonts/
