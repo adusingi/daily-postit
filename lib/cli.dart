@@ -47,15 +47,10 @@ void main(List<String> arguments) async {
     exit(1);
   }
 }
-  } catch (e) {
-    print('Error: $e');
-    exit(1);
-  }
-}
 
 Future<void> handleList(ArgResults command, DatabaseService dbService) async {
-  final done = command.flag('done', abbr: 'd', defaultsTo: false);
-  final dateArg = command.option('date');
+  final done = command['done'] as bool;
+  final dateArg = command['date'] as String?;
   final date = dateArg ?? DateFormat('yyyy-MM-dd').format(DateTime.now());
 
   final tasks = await dbService.getTasksForDate(date);
