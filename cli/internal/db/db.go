@@ -39,7 +39,42 @@ func New() (*DB, error) {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	return &DB{conn: conn}, nil
+	db := &DB{conn: conn}
+
+	// Initialize schema if needed
+	if err := db.initSchema(); err != nil {
+		return nil, fmt.Errorf("failed to initialize schema: %w", err)
+	}
+
+	return db, nil
+}
+
+// initSchema creates the database tables if they don't exist
+func (db *DB) initSchema() error {
+	query := `
+		CREATE TABLE IF NOT EXISTS tasks (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			content TEXT NOT NULL,
+			date TEXT NOT NULL,
+			is_done INTEGER DEFAULT 0,
+			hidden_text TEXT,
+			created_at TEXT NOT NULL,
+			updated_at TEXT NOT NULL
+		)
+	`
+	if _, err := db.conn.Exec(query); err != nil {
+		return fmt.Errorf("failed to create tasks table: %w", err)
+	}
+
+	// Create indexes
+	if _, err := db.conn.Exec("CREATE INDEX IF NOT EXISTS idx_tasks_date ON tasks(date)"); err != nil {
+		return fmt.Errorf("failed to create date index: %w", err)
+	}
+	if _, err := db.conn.Exec("CREATE INDEX IF NOT EXISTS idx_tasks_date_is_done ON tasks(date, is_done)"); err != nil {
+		return fmt.Errorf("failed to create date_is_done index: %w", err)
+	}
+
+	return nil
 }
 
 // Close closes the database connection
