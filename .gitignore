@@ -1,0 +1,21 @@
+# Flutter
+.dart_tool/
+.build/
+build/
+
+# iOS/macOS
+ios/Pods/
+ios/.symlinks/
+macos/Pods/
+macos/.symlinks/
+
+# IDE
+.idea/
+.vscode/
+
+# binaries
+bin/
+
+# misc
+*.log
+.DS_Store
