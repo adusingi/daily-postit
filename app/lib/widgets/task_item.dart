@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/task.dart';
 import '../services/database_service.dart';
@@ -27,6 +28,8 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
   late TextEditingController _contentController;
   late FocusNode _textFocusNode;
   late FocusNode _contentFocusNode;
+  Timer? _hiddenTextDebounce;
+  late String _lastSavedHiddenText;
 
   @override
   void initState() {
@@ -41,6 +44,7 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
     );
     _hiddenTextController = TextEditingController(text: widget.task.hiddenText ?? '');
     _contentController = TextEditingController(text: widget.task.content);
+    _lastSavedHiddenText = widget.task.hiddenText ?? '';
     _textFocusNode = FocusNode();
     _contentFocusNode = FocusNode();
     
@@ -53,6 +57,7 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
     super.didUpdateWidget(oldWidget);
     if (!_textFocusNode.hasFocus && oldWidget.task.hiddenText != widget.task.hiddenText) {
       _hiddenTextController.text = widget.task.hiddenText ?? '';
+      _lastSavedHiddenText = widget.task.hiddenText ?? '';
     }
   }
 
@@ -60,6 +65,8 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
   void dispose() {
     _textFocusNode.removeListener(_onFocusChange);
     _contentFocusNode.removeListener(_onContentFocusChange);
+    _hiddenTextDebounce?.cancel();
+    _flushHiddenText();
     // Unfocus before disposing to prevent callbacks
     _contentFocusNode.unfocus();
     _textFocusNode.unfocus();
@@ -79,6 +86,9 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
         _isExpanded = true;
         _expandController.forward();
       });
+    }
+    if (!_textFocusNode.hasFocus) {
+      _flushHiddenText();
     }
   }
 
@@ -143,15 +153,28 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
   }
 
   Future<void> _updateHiddenText(String text) async {
+    if (widget.isReadOnly) return;
+    _hiddenTextDebounce?.cancel();
+    _hiddenTextDebounce = Timer(const Duration(milliseconds: 400), () {
+      _persistHiddenText(text);
+    });
+  }
+
+  Future<void> _persistHiddenText(String text) async {
+    if (text == _lastSavedHiddenText) return;
+
     final updated = widget.task.copyWith(
       hiddenText: text.isEmpty ? null : text,
       updatedAt: DateTime.now(),
     );
 
     await DatabaseService.instance.updateTask(updated);
-    if (mounted) {
-      widget.onChanged();
-    }
+    _lastSavedHiddenText = text;
+  }
+
+  Future<void> _flushHiddenText() async {
+    _hiddenTextDebounce?.cancel();
+    await _persistHiddenText(_hiddenTextController.text);
   }
 
   @override
