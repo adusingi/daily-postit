@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/task.dart';
-import '../services/database_service.dart';
+import '../services/firestore_service.dart';
 
 class TaskItem extends StatefulWidget {
   final Task task;
@@ -122,7 +122,7 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
       updatedAt: DateTime.now(),
     );
 
-    await DatabaseService.instance.updateTask(updated);
+    await FirestoreService.instance.updateTask(updated);
     if (mounted) {
       widget.onChanged();
     }
@@ -148,7 +148,7 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
       updatedAt: DateTime.now(),
     );
 
-    await DatabaseService.instance.updateTask(updated);
+    await FirestoreService.instance.updateTask(updated);
     widget.onChanged();
   }
 
@@ -168,7 +168,7 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
       updatedAt: DateTime.now(),
     );
 
-    await DatabaseService.instance.updateTask(updated);
+    await FirestoreService.instance.updateTask(updated);
     _lastSavedHiddenText = text;
   }
 

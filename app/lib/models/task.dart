@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Task {
-  final int? id;
+  final String? id;
   final String content;
   final String date;
   final bool isDone;
@@ -18,7 +20,7 @@ class Task {
   });
 
   Task copyWith({
-    int? id,
+    String? id,
     String? content,
     String? date,
     bool? isDone,
@@ -50,14 +52,44 @@ class Task {
   }
 
   factory Task.fromMap(Map<String, dynamic> map) {
+    final idValue = map['id'];
+    final id = idValue == null ? null : idValue.toString();
     return Task(
-      id: map['id'],
+      id: id,
       content: map['content'],
       date: map['date'],
       isDone: map['is_done'] == 1,
       hiddenText: map['hidden_text'],
       createdAt: DateTime.parse(map['created_at']),
       updatedAt: DateTime.parse(map['updated_at']),
+    );
+  }
+
+  Map<String, dynamic> toFirestoreMap({String? id}) {
+    return {
+      if (id != null) 'id': id,
+      'content': content,
+      'date': date,
+      'is_done': isDone,
+      'hidden_text': hiddenText,
+      'created_at': createdAt,
+      'updated_at': updatedAt,
+    };
+  }
+
+  factory Task.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+    final data = doc.data() ?? <String, dynamic>{};
+    final created = data['created_at'];
+    final updated = data['updated_at'];
+
+    return Task(
+      id: doc.id,
+      content: data['content'] ?? '',
+      date: data['date'] ?? '',
+      isDone: data['is_done'] == true,
+      hiddenText: data['hidden_text'],
+      createdAt: created is Timestamp ? created.toDate() : DateTime.now(),
+      updatedAt: updated is Timestamp ? updated.toDate() : DateTime.now(),
     );
   }
 

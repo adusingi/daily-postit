@@ -13,8 +13,9 @@ Daily Post-it is a minimalist daily todo app with CLI companion for macOS, iOS, 
 - Binary task states (Done / Not Done) with hidden expandable notes
 - Auto-rollover of unfinished tasks to new day
 - CLI tool for macOS power users (written in Go)
-- Shared SQLite database between GUI and CLI
+- Firestore sync for GUI; SQLite retained for CLI and migration
 - No authentication required
+- Google sign-in with Firebase sync (macOS/iOS)
 
 ## Core MVP features
 - Daily task list with today's date prominently displayed
@@ -27,6 +28,7 @@ Daily Post-it is a minimalist daily todo app with CLI companion for macOS, iOS, 
 - Completed tasks stay on original day (archived view)
 - Simple date navigation to view previous days (read-only)
 - Past days listed as collapsible rows under Today (tasks hidden until expanded)
+- Google sign-in and cross-device sync via Firebase
 
 ## CLI Features (macOS only) ✅
 - `daily list` — show today's unfinished tasks
@@ -47,16 +49,22 @@ Daily Post-it is a minimalist daily todo app with CLI companion for macOS, iOS, 
 - **Targets:** macOS, iOS, iPadOS
 - **Packages:**
   - `sqflite` - SQLite database
+  - `firebase_core` - Firebase initialization
+  - `firebase_auth` - Google sign-in
+  - `cloud_firestore` - Cloud sync
+  - `google_sign_in` - Google auth provider
   - `intl` - Date formatting
   - `path_provider` - Platform-specific paths
   - `shared_preferences` - Rollover tracking
   - `args` - CLI argument parsing (Dart CLI, deprecated)
 - **CLI Language:** Go 1.22+
 - **CLI SQLite:** modernc.org/sqlite (pure Go)
-- **Database:** SQLite shared between GUI and CLI
+- **Database:** Firebase Firestore (GUI), SQLite (CLI + migration)
 - **Database Location:** 
-  - macOS: `~/Library/Application Support/DailyPostIt/tasks.db`
-  - iOS: App documents directory
+  - Firestore (cloud) for GUI sync
+  - Local SQLite for CLI/migration:
+    - macOS: `~/Library/Application Support/DailyPostIt/tasks.db`
+    - iOS: App documents directory
 
 ## UI Requirements ✅
 - Clean, distraction-free interface (Apple Notes aesthetic)

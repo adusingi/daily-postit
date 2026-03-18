@@ -14,6 +14,7 @@ title: "Daily Post-it - Project Status"
 - ✅ Refactored repo into monorepo layout with Flutter app under `app/`
 - ✅ Past days listed as collapsible rows under Today (tasks hidden until expanded)
 - ✅ Sparkle updater disabled in Debug until configured (prevents startup error)
+- ✅ Firebase sync added with Google sign-in (macOS/iOS)
 - ✅ Go CLI fully implemented and tested (all 7 commands working)
 - ✅ Flutter GUI fully implemented (HomeScreen, DayView, TaskItem)
 - ✅ Auto-rollover service with shared_preferences
@@ -93,6 +94,7 @@ title: "Daily Post-it - Project Status"
 - [x] Implement auto-rollover check on app open (unfinished tasks from yesterday move to today)
 - [x] Add light/dark mode theme support via Material 3
 - [x] Show past days as collapsible rows under Today (tasks hidden until expanded)
+- [x] Add Google sign-in and Firestore sync for tasks
 
 **Test checklist (Phase 3)**
 - [x] Today's date displays prominently on app launch
@@ -104,6 +106,7 @@ title: "Daily Post-it - Project Status"
 - [x] Light mode renders correctly
 - [x] Dark mode renders correctly
 - [x] Past days list expands/collapses and shows tasks on demand
+- [ ] Google sign-in works on macOS and iOS (verify on device)
 
 **Exit criteria:** Home screen displays current date with navigation to view any day. ✅
 
@@ -267,6 +270,10 @@ title: "Daily Post-it - Project Status"
 dependencies:
   flutter:
     sdk: flutter
+  firebase_core: ^3.2.0
+  firebase_auth: ^5.1.0
+  cloud_firestore: ^5.4.0
+  google_sign_in: ^6.2.1
   sqflite: ^2.3.0
   flutter_markdown: ^0.6.18
   intl: ^0.19.0

@@ -26,6 +26,8 @@ flutter pub get
 flutter run -d macos
 ```
 
+The app will prompt for Google sign-in to enable cross-device sync.
+
 ### CLI Usage
 
 ```bash

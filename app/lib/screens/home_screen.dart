@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/database_service.dart';
+import '../services/firestore_service.dart';
 import '../services/rollover_service.dart';
+import '../services/auth_service.dart';
 import '../models/task.dart';
 import 'day_view.dart';
 
@@ -24,12 +27,36 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _checkAndRollover();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    await _migrateLocalTasksIfNeeded();
+    await _checkAndRollover();
     _loadTasks();
   }
 
+  Future<void> _migrateLocalTasksIfNeeded() async {
+    const key = 'firebaseMigrationDone';
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(key) == true) return;
+
+    final hasCloudTasks = await FirestoreService.instance.hasAnyTasks();
+    if (hasCloudTasks) {
+      await prefs.setBool(key, true);
+      return;
+    }
+
+    final localTasks = await DatabaseService.instance.getAllTasks();
+    if (localTasks.isNotEmpty) {
+      await FirestoreService.instance.importTasks(localTasks);
+    }
+
+    await prefs.setBool(key, true);
+  }
+
   Future<void> _checkAndRollover() async {
-    final rolloverService = RolloverService(DatabaseService.instance);
+    final rolloverService = RolloverService(FirestoreService.instance);
     final rolledOver = await rolloverService.checkAndRollover();
     
     if (rolledOver && mounted) {
@@ -50,9 +77,9 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
-    final tasksFuture = DatabaseService.instance.getTasksForDate(dateStr);
+    final tasksFuture = FirestoreService.instance.getTasksForDate(dateStr);
     final pastDatesFuture = _isToday
-        ? DatabaseService.instance.getTaskDatesBefore(dateStr)
+        ? FirestoreService.instance.getTaskDatesBefore(dateStr)
         : Future.value(<String>[]);
 
     final results = await Future.wait([tasksFuture, pastDatesFuture]);
@@ -110,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _loadingPastDays.add(dateStr);
     });
 
-    final tasks = await DatabaseService.instance.getTasksForDate(dateStr);
+    final tasks = await FirestoreService.instance.getTasksForDate(dateStr);
     if (!mounted) return;
     setState(() {
       _pastDayTasks[dateStr] = tasks;
@@ -172,7 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
         updatedAt: DateTime.now(),
       );
       
-      await DatabaseService.instance.createTask(task);
+      await FirestoreService.instance.createTask(task);
       _loadTasks();
     }
   }
@@ -253,8 +280,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     tooltip: 'Next day',
                   ),
                   
-                  // Spacer for symmetry
-                  const SizedBox(width: 48),
+                  IconButton(
+                    onPressed: AuthService.instance.signOut,
+                    icon: const Icon(Icons.logout),
+                    tooltip: 'Sign out',
+                  ),
                 ],
               ),
             ),

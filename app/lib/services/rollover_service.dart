@@ -1,11 +1,11 @@
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'database_service.dart';
+import 'firestore_service.dart';
 
 class RolloverService {
   static const String _lastRolloverKey = 'lastRolloverDate';
   
-  final DatabaseService _dbService;
+  final FirestoreService _dbService;
   
   RolloverService(this._dbService);
   

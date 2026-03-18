@@ -16,6 +16,7 @@ app/build/
 # iOS/macOS
 app/ios/Pods/
 app/ios/.symlinks/
+app/ios/Runner.xcworkspace/xcshareddata/swiftpm/
 app/macos/Pods/
 app/macos/.symlinks/
 
