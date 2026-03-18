@@ -21,6 +21,7 @@ A minimalist daily todo app with CLI companion for macOS, iOS, and iPadOS.
 ### Installation
 
 ```bash
+cd app
 flutter pub get
 flutter run -d macos
 ```
@@ -46,23 +47,28 @@ daily stats
 ### Directory Structure
 
 ```
-lib/
-├── main.dart                    # GUI entry point
-├── cli.dart                     # CLI entry point
-├── models/
-│   └── task.dart                # Task model
-├── screens/
-│   ├── home_screen.dart         # Main home screen
-│   └── day_view.dart            # Day view
-├── widgets/
-│   ├── markdown_editor.dart     # Markdown editor
-│   ├── task_item.dart           # Task item widget
-│   └── date_header.dart         # Date header
-├── services/
-│   ├── database_service.dart    # Shared SQLite logic
-│   └── cli_service.dart         # CLI handlers
-└── utils/
-    └── database_path.dart       # Platform-specific paths
+app/
+└── lib/
+    ├── main.dart                    # GUI entry point
+    ├── cli.dart                     # CLI entry point
+    ├── models/
+    │   └── task.dart                # Task model
+    ├── screens/
+    │   ├── home_screen.dart         # Main home screen
+    │   └── day_view.dart            # Day view
+    ├── widgets/
+    │   ├── markdown_editor.dart     # Markdown editor
+    │   ├── task_item.dart           # Task item widget
+    │   └── date_header.dart         # Date header
+    ├── services/
+    │   ├── database_service.dart    # Shared SQLite logic
+    │   └── cli_service.dart         # CLI handlers
+    └── utils/
+        └── database_path.dart       # Platform-specific paths
+cli/
+└── ...                              # Go CLI project
+docs/
+└── ...                              # Project docs
 ```
 
 ### Database Location
