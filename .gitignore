@@ -1,11 +1,17 @@
 # Flutter
-.build/
 .dart_tool/
-.packages
+.build/
+build/
 
-# macOS
+# iOS/macOS
+ios/Pods/
+ios/.symlinks/
 macos/Pods/
-macos/Runner.xcworkspace/
+macos/.symlinks/
+
+# IDE
+.idea/
+.vscode/
 
 # binaries
 bin/
