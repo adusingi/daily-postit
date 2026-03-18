@@ -1,17 +1,23 @@
 # Flutter
 .dart_tool/
-.build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
 build/
+
+# Env
+.env*
+
+# IDE
+.idea/
+*.iml
+.vscode/
 
 # iOS/macOS
 ios/Pods/
 ios/.symlinks/
 macos/Pods/
 macos/.symlinks/
-
-# IDE
-.idea/
-.vscode/
 
 # binaries
 bin/
