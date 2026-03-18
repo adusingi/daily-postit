@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -50,10 +51,16 @@ class _SignInScreenState extends State<SignInScreen> {
       } else {
         await AuthService.instance.signInWithEmail(email, password);
       }
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = _formatAuthError(e);
+        });
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Sign in failed. Please check your credentials.';
+          _error = 'Sign in failed. Please try again.';
         });
       }
     } finally {
@@ -73,6 +80,12 @@ class _SignInScreenState extends State<SignInScreen> {
 
     try {
       await AuthService.instance.signInWithGoogle();
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = _formatAuthError(e);
+        });
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -209,5 +222,26 @@ class _SignInScreenState extends State<SignInScreen> {
         ),
       ),
     );
+  }
+
+  String _formatAuthError(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'user-not-found':
+        return 'No account found for that email.';
+      case 'wrong-password':
+        return 'Incorrect password.';
+      case 'invalid-email':
+        return 'Invalid email address.';
+      case 'email-already-in-use':
+        return 'That email is already in use.';
+      case 'weak-password':
+        return 'Password is too weak (min 6 chars).';
+      case 'operation-not-allowed':
+        return 'Email/password sign-in is not enabled.';
+      case 'network-request-failed':
+        return 'Network error. Check your connection.';
+      default:
+        return 'Auth error: ${e.code}';
+    }
   }
 }
