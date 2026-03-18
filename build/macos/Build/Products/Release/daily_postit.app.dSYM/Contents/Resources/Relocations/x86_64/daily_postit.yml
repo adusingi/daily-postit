@@ -1,0 +1,21 @@
+---
+triple:          'x86_64-apple-darwin'
+binary-path:     '/Users/mac3jis/Documents/Code/p/postIt/build/macos/Build/Products/Release/daily_postit.app/Contents/MacOS/daily_postit'
+relocations:
+  - { offset: 0xD919D, size: 0x8, addend: 0x0, symName: '_$s12daily_postit17MainFlutterWindowC12awakeFromNibyyFTo', symObjAddr: 0x0, symBinAddr: 0x100001400, symSize: 0x100 }
+  - { offset: 0xD9317, size: 0x8, addend: 0x0, symName: '_$s12daily_postit17MainFlutterWindowCMa', symObjAddr: 0x1B0, symBinAddr: 0x1000015B0, symSize: 0x20 }
+  - { offset: 0xD932B, size: 0x8, addend: 0x0, symName: '_$s12daily_postit24RegisterGeneratedPlugins8registryySo21FlutterPluginRegistry_p_tFTf4e_nSo0G14ViewControllerC_Tg5', symObjAddr: 0x1D0, symBinAddr: 0x1000015D0, symSize: 0xF1 }
+  - { offset: 0xD93BF, size: 0x8, addend: 0x0, symName: '_$s12daily_postit17MainFlutterWindowC12awakeFromNibyyFTo', symObjAddr: 0x0, symBinAddr: 0x100001400, symSize: 0x100 }
+  - { offset: 0xD94FB, size: 0x8, addend: 0x0, symName: '_$s12daily_postit17MainFlutterWindowC11contentRect9styleMask7backing5deferACSo6CGRectV_So013NSWindowStyleI0VSo18NSBackingStoreTypeVSbtcfcTo', symObjAddr: 0x100, symBinAddr: 0x100001500, symSize: 0x80 }
+  - { offset: 0xD9555, size: 0x8, addend: 0x0, symName: '_$s12daily_postit17MainFlutterWindowCfD', symObjAddr: 0x180, symBinAddr: 0x100001580, symSize: 0x30 }
+  - { offset: 0xD96A0, size: 0x8, addend: 0x0, symName: '_$s12daily_postit11AppDelegateC47applicationShouldTerminateAfterLastWindowClosedySbSo13NSApplicationCFTo', symObjAddr: 0x0, symBinAddr: 0x1000016D0, symSize: 0x10 }
+  - { offset: 0xD9766, size: 0x8, addend: 0x0, symName: '_$s12daily_postit11AppDelegateCMa', symObjAddr: 0xB0, symBinAddr: 0x100001780, symSize: 0x14 }
+  - { offset: 0xD97AE, size: 0x8, addend: 0x0, symName: '_$s12daily_postit11AppDelegateC47applicationShouldTerminateAfterLastWindowClosedySbSo13NSApplicationCFTo', symObjAddr: 0x0, symBinAddr: 0x1000016D0, symSize: 0x10 }
+  - { offset: 0xD97C2, size: 0x8, addend: 0x0, symName: '_$s12daily_postit11AppDelegateC40applicationSupportsSecureRestorableStateySbSo13NSApplicationCFTo', symObjAddr: 0x10, symBinAddr: 0x1000016E0, symSize: 0x10 }
+  - { offset: 0xD97EF, size: 0x8, addend: 0x0, symName: '_$s12daily_postit11AppDelegateCACycfcTo', symObjAddr: 0x20, symBinAddr: 0x1000016F0, symSize: 0x30 }
+  - { offset: 0xD982B, size: 0x8, addend: 0x0, symName: '_$s12daily_postit11AppDelegateCfD', symObjAddr: 0x50, symBinAddr: 0x100001720, symSize: 0x30 }
+  - { offset: 0xD9897, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x80, symBinAddr: 0x100001750, symSize: 0x30 }
+  - { offset: 0xD99DD, size: 0x8, addend: 0x0, symName: '_$s12daily_postit19ResourceBundleClass33_7BE17DA60C415CCB4E4D989C10EF0495LLCfD', symObjAddr: 0x0, symBinAddr: 0x1000017A0, symSize: 0x20 }
+  - { offset: 0xD9A1F, size: 0x8, addend: 0x0, symName: '_$s12daily_postit19ResourceBundleClass33_7BE17DA60C415CCB4E4D989C10EF0495LLCMa', symObjAddr: 0x20, symBinAddr: 0x1000017C0, symSize: 0x14 }
+  - { offset: 0xD9A3B, size: 0x8, addend: 0x0, symName: '_$s12daily_postit19ResourceBundleClass33_7BE17DA60C415CCB4E4D989C10EF0495LLCfD', symObjAddr: 0x0, symBinAddr: 0x1000017A0, symSize: 0x20 }
+...
