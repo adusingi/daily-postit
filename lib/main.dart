@@ -19,7 +19,8 @@ class DailyPostItApp extends StatelessWidget {
           seedColor: const Color(0xFF007AFF),
           brightness: Brightness.light,
         ),
-        scaffoldBackgroundColor: const Color(0xFFF5F5F7),
+        scaffoldBackgroundColor: const Color(0xFF0E1729),
+        fontFamily: 'JetBrainsMono',
         cardTheme: const CardThemeData(
           elevation: 0,
           shape: RoundedRectangleBorder(
@@ -39,7 +40,8 @@ class DailyPostItApp extends StatelessWidget {
           seedColor: const Color(0xFF007AFF),
           brightness: Brightness.dark,
         ),
-        scaffoldBackgroundColor: const Color(0xFF1C1C1E),
+        scaffoldBackgroundColor: const Color(0xFF0E1729),
+        fontFamily: 'JetBrainsMono',
         cardTheme: const CardThemeData(
           elevation: 0,
           shape: RoundedRectangleBorder(

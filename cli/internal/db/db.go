@@ -83,12 +83,20 @@ func (db *DB) Close() error {
 }
 
 // getDatabasePath returns the path to the SQLite database
-// This matches the Flutter app's database location
+// This matches the Flutter app's sandboxed database location
 func getDatabasePath() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
+	
+	// Check if sandboxed Flutter database exists
+	sandboxedPath := filepath.Join(home, "Library", "Containers", "com.example.dailyPostit", "Data", "Library", "Application Support", "DailyPostIt", "tasks.db")
+	if _, err := os.Stat(sandboxedPath); err == nil {
+		return sandboxedPath, nil
+	}
+	
+	// Fallback to non-sandboxed path
 	return filepath.Join(home, "Library", "Application Support", "DailyPostIt", "tasks.db"), nil
 }
 

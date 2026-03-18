@@ -20,10 +20,13 @@ class TaskItem extends StatefulWidget {
 
 class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin {
   bool _isExpanded = false;
+  bool _isEditingContent = false;
   late AnimationController _expandController;
   late Animation<double> _expandAnimation;
   late TextEditingController _hiddenTextController;
+  late TextEditingController _contentController;
   late FocusNode _textFocusNode;
+  late FocusNode _contentFocusNode;
 
   @override
   void initState() {
@@ -37,24 +40,41 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
       curve: Curves.easeInOut,
     );
     _hiddenTextController = TextEditingController(text: widget.task.hiddenText ?? '');
+    _contentController = TextEditingController(text: widget.task.content);
     _textFocusNode = FocusNode();
+    _contentFocusNode = FocusNode();
     
-    // Listen to focus changes to keep expanded when typing
     _textFocusNode.addListener(_onFocusChange);
+    _contentFocusNode.addListener(_onContentFocusChange);
   }
 
   @override
   void didUpdateWidget(TaskItem oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Only update text if not currently focused and text changed externally
     if (!_textFocusNode.hasFocus && oldWidget.task.hiddenText != widget.task.hiddenText) {
       _hiddenTextController.text = widget.task.hiddenText ?? '';
     }
   }
 
+  @override
+  void dispose() {
+    _textFocusNode.removeListener(_onFocusChange);
+    _contentFocusNode.removeListener(_onContentFocusChange);
+    // Unfocus before disposing to prevent callbacks
+    _contentFocusNode.unfocus();
+    _textFocusNode.unfocus();
+    _contentFocusNode.dispose();
+    _textFocusNode.dispose();
+    _contentController.dispose();
+    _hiddenTextController.dispose();
+    // Stop animation before disposing
+    _expandController.stop();
+    _expandController.dispose();
+    super.dispose();
+  }
+
   void _onFocusChange() {
-    if (_textFocusNode.hasFocus && !_isExpanded) {
-      // Auto-expand when text field gets focus
+    if (_textFocusNode.hasFocus && !_isExpanded && mounted) {
       setState(() {
         _isExpanded = true;
         _expandController.forward();
@@ -62,16 +82,44 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
     }
   }
 
-  @override
-  void dispose() {
-    _textFocusNode.removeListener(_onFocusChange);
-    _expandController.dispose();
-    _hiddenTextController.dispose();
-    _textFocusNode.dispose();
-    super.dispose();
+  void _onContentFocusChange() {
+    if (!_contentFocusNode.hasFocus && _isEditingContent) {
+      _saveContent();
+      if (mounted) {
+        setState(() {
+          _isEditingContent = false;
+        });
+      }
+    }
+  }
+
+  void _startEditingContent() {
+    if (widget.isReadOnly || widget.task.isDone) return;
+    setState(() {
+      _isEditingContent = true;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _contentFocusNode.requestFocus();
+    });
+  }
+
+  Future<void> _saveContent() async {
+    final newContent = _contentController.text.trim();
+    if (newContent.isEmpty || newContent == widget.task.content) return;
+
+    final updated = widget.task.copyWith(
+      content: newContent,
+      updatedAt: DateTime.now(),
+    );
+
+    await DatabaseService.instance.updateTask(updated);
+    if (mounted) {
+      widget.onChanged();
+    }
   }
 
   void _toggleExpand() {
+    if (!mounted) return;
     setState(() {
       _isExpanded = !_isExpanded;
       if (_isExpanded) {
@@ -101,7 +149,9 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
     );
 
     await DatabaseService.instance.updateTask(updated);
-    widget.onChanged();
+    if (mounted) {
+      widget.onChanged();
+    }
   }
 
   @override
@@ -122,22 +172,22 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
       ),
       child: Column(
         children: [
-          // Main task row - NOT using InkWell to avoid tap conflicts
-          GestureDetector(
-            onTap: widget.isReadOnly ? null : _toggleDone,
-            behavior: HitTestBehavior.translucent,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.vertical(
-                  top: const Radius.circular(12),
-                  bottom: _isExpanded ? Radius.zero : const Radius.circular(12),
-                ),
+          // Main task row
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.vertical(
+                top: const Radius.circular(12),
+                bottom: _isExpanded ? Radius.zero : const Radius.circular(12),
               ),
-              child: Row(
-                children: [
-                  // Checkbox
-                  AnimatedContainer(
+            ),
+            child: Row(
+              children: [
+                // Checkbox - only tappable area to mark as done
+                GestureDetector(
+                  onTap: widget.isReadOnly ? null : _toggleDone,
+                  behavior: HitTestBehavior.opaque,
+                  child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     curve: Curves.easeOut,
                     width: 24,
@@ -162,49 +212,73 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
                           )
                         : null,
                   ),
-                  const SizedBox(width: 12),
-                  
-                  // Task content
-                  Expanded(
-                    child: Text(
-                      widget.task.content,
-                      style: TextStyle(
-                        fontSize: 16,
-                        decoration: widget.task.isDone
-                            ? TextDecoration.lineThrough
-                            : null,
-                        color: widget.task.isDone
-                            ? theme.colorScheme.onSurface.withOpacity(0.5)
-                            : theme.colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
-                  
-                  // Expand button
-                  if (!widget.isReadOnly || hasHiddenText)
-                    Material(
-                      type: MaterialType.transparency,
-                      child: InkWell(
-                        onTap: _toggleExpand,
-                        borderRadius: BorderRadius.circular(20),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: AnimatedRotation(
-                            turns: _isExpanded ? 0.5 : 0,
-                            duration: const Duration(milliseconds: 250),
-                            child: Icon(
-                              hasHiddenText ? Icons.notes : Icons.expand_more,
-                              size: 20,
-                              color: hasHiddenText
-                                  ? theme.colorScheme.primary
-                                  : theme.colorScheme.onSurface.withOpacity(0.4),
+                ),
+                const SizedBox(width: 12),
+                
+                // Task content - editable
+                Expanded(
+                  child: _isEditingContent
+                      ? TextField(
+                          controller: _contentController,
+                          focusNode: _contentFocusNode,
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
+                            isDense: true,
+                          ),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                          maxLines: null,
+                          onSubmitted: (_) {
+                            _saveContent();
+                            setState(() {
+                              _isEditingContent = false;
+                            });
+                          },
+                        )
+                      : GestureDetector(
+                          onTap: widget.isReadOnly ? null : _startEditingContent,
+                          child: Text(
+                            widget.task.content,
+                            style: TextStyle(
+                              fontSize: 16,
+                              decoration: widget.task.isDone
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                              color: widget.task.isDone
+                                  ? theme.colorScheme.onSurface.withOpacity(0.5)
+                                  : theme.colorScheme.onSurface,
                             ),
+                          ),
+                        ),
+                ),
+                
+                // Expand button
+                if (!widget.isReadOnly || hasHiddenText)
+                  Material(
+                    type: MaterialType.transparency,
+                    child: InkWell(
+                      onTap: _toggleExpand,
+                      borderRadius: BorderRadius.circular(20),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: AnimatedRotation(
+                          turns: _isExpanded ? 0.5 : 0,
+                          duration: const Duration(milliseconds: 250),
+                          child: Icon(
+                            hasHiddenText ? Icons.notes : Icons.expand_more,
+                            size: 20,
+                            color: hasHiddenText
+                                ? theme.colorScheme.primary
+                                : theme.colorScheme.onSurface.withOpacity(0.4),
                           ),
                         ),
                       ),
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
           ),
           
@@ -234,7 +308,6 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
                         )
                       : const SizedBox.shrink())
                   : GestureDetector(
-                      // Prevent tap from bubbling up to parent
                       onTap: () {
                         _textFocusNode.requestFocus();
                       },
