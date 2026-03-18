@@ -17,8 +17,15 @@ app/build/
 app/ios/Pods/
 app/ios/.symlinks/
 app/ios/Runner.xcworkspace/xcshareddata/swiftpm/
+app/ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
 app/macos/Pods/
 app/macos/.symlinks/
+
+# Firebase (local config)
+app/firebase.json
+app/lib/firebase_options.dart
+app/ios/Runner/GoogleService-Info.plist
+app/macos/Runner/GoogleService-Info.plist
 
 # binaries
 bin/

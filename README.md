@@ -28,6 +28,21 @@ flutter run -d macos
 
 The app will prompt for Google sign-in to enable cross-device sync.
 
+### Firebase Setup (Local)
+
+Firebase config files are intentionally not committed. Run:
+
+```bash
+cd app
+flutterfire configure --project=daily-postit-89948
+```
+
+This generates:
+- `app/firebase.json`
+- `app/lib/firebase_options.dart`
+- `app/ios/Runner/GoogleService-Info.plist`
+- `app/macos/Runner/GoogleService-Info.plist`
+
 ### CLI Usage
 
 ```bash
