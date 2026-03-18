@@ -16,6 +16,10 @@ class _HomeScreenState extends State<HomeScreen> {
   DateTime _selectedDate = DateTime.now();
   List<Task> _tasks = [];
   bool _isLoading = true;
+  List<DateTime> _pastDays = [];
+  final Set<String> _expandedPastDays = {};
+  final Map<String, List<Task>> _pastDayTasks = {};
+  final Set<String> _loadingPastDays = {};
 
   @override
   void initState() {
@@ -46,11 +50,26 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
-    final tasks = await DatabaseService.instance.getTasksForDate(dateStr);
+    final tasksFuture = DatabaseService.instance.getTasksForDate(dateStr);
+    final pastDatesFuture = _isToday
+        ? DatabaseService.instance.getTaskDatesBefore(dateStr)
+        : Future.value(<String>[]);
+
+    final results = await Future.wait([tasksFuture, pastDatesFuture]);
+    final tasks = results[0] as List<Task>;
+    final pastDates = results[1] as List<String>;
 
     setState(() {
       _tasks = tasks;
       _isLoading = false;
+      if (_isToday) {
+        _pastDays = pastDates.map(DateTime.parse).toList();
+      } else {
+        _pastDays = [];
+        _expandedPastDays.clear();
+        _pastDayTasks.clear();
+        _loadingPastDays.clear();
+      }
     });
   }
 
@@ -69,6 +88,34 @@ class _HomeScreenState extends State<HomeScreen> {
       });
       _loadTasks();
     }
+  }
+
+  Future<void> _togglePastDay(String dateStr) async {
+    if (_expandedPastDays.contains(dateStr)) {
+      setState(() {
+        _expandedPastDays.remove(dateStr);
+      });
+      return;
+    }
+
+    setState(() {
+      _expandedPastDays.add(dateStr);
+    });
+
+    if (_pastDayTasks.containsKey(dateStr)) {
+      return;
+    }
+
+    setState(() {
+      _loadingPastDays.add(dateStr);
+    });
+
+    final tasks = await DatabaseService.instance.getTasksForDate(dateStr);
+    if (!mounted) return;
+    setState(() {
+      _pastDayTasks[dateStr] = tasks;
+      _loadingPastDays.remove(dateStr);
+    });
   }
 
   Future<void> _showDatePicker() async {
@@ -247,6 +294,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       isReadOnly: !_isToday,
                       onTasksChanged: _loadTasks,
                       onAddTask: _isToday ? _showAddTaskDialog : null,
+                      pastDays: _isToday ? _pastDays : const [],
+                      expandedPastDays: _expandedPastDays,
+                      pastDayTasks: _pastDayTasks,
+                      loadingPastDays: _loadingPastDays,
+                      onTogglePastDay: _togglePastDay,
                     ),
             ),
           ],

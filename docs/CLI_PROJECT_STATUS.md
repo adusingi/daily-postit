@@ -4,9 +4,9 @@ title: "Daily Post-it - CLI Project Status"
 
 # Daily Post-it - CLI Project Status
 
-**Last Updated:** 2026-03-16
+**Last Updated:** 2026-03-18
 **Current Phase:** CLI Complete ✅
-**Branch Policy:** Work on `main`, create feature branches for CLI features.
+**Branch Policy:** Work on `development`, create feature branches for CLI features.
 
 ---
 
@@ -180,7 +180,7 @@ make build
 cd cli
 make build-prod
 
-# Output: bin/daily (6MB)
+# Output: bin/daily (6MB) at repo root (generated)
 ```
 
 ---

@@ -4,13 +4,16 @@ title: "Daily Post-it - Project Status"
 
 # Daily Post-it - Project Status
 
-**Last Updated:** 2026-03-16
+**Last Updated:** 2026-03-18
 **Current Phase:** Phase 8 - Build & Testing
-**Branch Policy:** Work on `main`, create feature branches for major changes.
+**Branch Policy:** Work on `development`, create feature branches for major changes.
 
 ---
 
-## Recent updates (2026-03-16)
+## Recent updates (2026-03-18)
+- ✅ Refactored repo into monorepo layout with Flutter app under `app/`
+- ✅ Past days listed as collapsible rows under Today (tasks hidden until expanded)
+- ✅ Sparkle updater disabled in Debug until configured (prevents startup error)
 - ✅ Go CLI fully implemented and tested (all 7 commands working)
 - ✅ Flutter GUI fully implemented (HomeScreen, DayView, TaskItem)
 - ✅ Auto-rollover service with shared_preferences
@@ -31,7 +34,7 @@ title: "Daily Post-it - Project Status"
 **Objective:** Initialize Flutter project with proper dependencies and folder structure.
 
 **Task checklist (Phase 1)**
-- [x] Create Flutter project (`flutter create --org com.dailypostit --platforms=ios,macos .`)
+- [x] Create Flutter project (`flutter create --org com.dailypostit --platforms=ios,macos .`, now under `app/`)
 - [x] Configure `pubspec.yaml` with required dependencies
 - [x] Set up folder structure (models, screens, widgets, services, utils)
 - [x] Configure macOS app metadata (name, identifier)
@@ -41,8 +44,8 @@ title: "Daily Post-it - Project Status"
 - [x] Verify Flutter builds for iOS simulator
 
 **Test checklist (Phase 1)**
-- [x] `flutter run -d macos` launches without errors
-- [x] `flutter run -d <ios-device>` launches without errors
+- [x] `cd app && flutter run -d macos` launches without errors
+- [x] `cd app && flutter run -d <ios-device>` launches without errors
 - [x] App icon and name display correctly on macOS
 - [x] App icon and name display correctly on iOS
 
@@ -89,6 +92,7 @@ title: "Daily Post-it - Project Status"
 - [x] Show "No tasks yet" empty state when no tasks exist
 - [x] Implement auto-rollover check on app open (unfinished tasks from yesterday move to today)
 - [x] Add light/dark mode theme support via Material 3
+- [x] Show past days as collapsible rows under Today (tasks hidden until expanded)
 
 **Test checklist (Phase 3)**
 - [x] Today's date displays prominently on app launch
@@ -99,6 +103,7 @@ title: "Daily Post-it - Project Status"
 - [x] Auto-rollver moves yesterday's unfinished tasks to today on first open
 - [x] Light mode renders correctly
 - [x] Dark mode renders correctly
+- [x] Past days list expands/collapses and shows tasks on demand
 
 **Exit criteria:** Home screen displays current date with navigation to view any day. ✅
 
@@ -280,6 +285,6 @@ dev_dependencies:
 ## Build Artifacts
 | Platform | Path | Size |
 |----------|------|------|
-| macOS App | `build/macos/Build/Products/Release/daily_postit.app` | 42.5 MB |
-| iOS Simulator | `build/ios/iphonesimulator/Runner.app` | ~30 MB |
+| macOS App | `app/build/macos/Build/Products/Release/daily_postit.app` | 42.5 MB |
+| iOS Simulator | `app/build/ios/iphonesimulator/Runner.app` | ~30 MB |
 | Go CLI | `bin/daily` | 6 MB |

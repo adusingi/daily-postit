@@ -93,6 +93,16 @@ class DatabaseService {
     return maps.map((map) => Task.fromMap(map)).toList();
   }
 
+  Future<List<String>> getTaskDatesBefore(String date) async {
+    final db = await instance.database;
+    final maps = await db.rawQuery(
+      'SELECT DISTINCT date FROM tasks WHERE date < ? ORDER BY date DESC',
+      [date],
+    );
+
+    return maps.map((map) => map['date'] as String).toList();
+  }
+
   Future<Task?> getTaskById(int id) async {
     final db = await instance.database;
     final maps = await db.query(
