@@ -11,8 +11,61 @@ class SignInScreen extends StatefulWidget {
 class _SignInScreenState extends State<SignInScreen> {
   bool _isSigningIn = false;
   String? _error;
+  bool _isCreateAccount = false;
+  late final TextEditingController _emailController;
+  late final TextEditingController _passwordController;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController = TextEditingController();
+    _passwordController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   Future<void> _signIn() async {
+    setState(() {
+      _isSigningIn = true;
+      _error = null;
+    });
+
+    try {
+      final email = _emailController.text.trim();
+      final password = _passwordController.text;
+      if (email.isEmpty || password.isEmpty) {
+        setState(() {
+          _error = 'Email and password are required.';
+        });
+        return;
+      }
+
+      if (_isCreateAccount) {
+        await AuthService.instance.createUserWithEmail(email, password);
+      } else {
+        await AuthService.instance.signInWithEmail(email, password);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = 'Sign in failed. Please check your credentials.';
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSigningIn = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
     setState(() {
       _isSigningIn = true;
       _error = null;
@@ -23,7 +76,7 @@ class _SignInScreenState extends State<SignInScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Sign in failed. Please try again.';
+          _error = 'Google sign-in failed. Please try again.';
         });
       }
     } finally {
@@ -65,7 +118,34 @@ class _SignInScreenState extends State<SignInScreen> {
               ),
               const SizedBox(height: 24),
               SizedBox(
-                width: 240,
+                width: 320,
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                        border: OutlineInputBorder(),
+                      ),
+                      textInputAction: TextInputAction.next,
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Password',
+                        border: OutlineInputBorder(),
+                      ),
+                      onSubmitted: (_) => _signIn(),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: 260,
                 child: FilledButton.icon(
                   onPressed: _isSigningIn ? null : _signIn,
                   icon: _isSigningIn
@@ -74,8 +154,44 @@ class _SignInScreenState extends State<SignInScreen> {
                           height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Icon(Icons.login),
-                  label: Text(_isSigningIn ? 'Signing in...' : 'Continue with Google'),
+                      : const Icon(Icons.email),
+                  label: Text(_isSigningIn
+                      ? 'Signing in...'
+                      : _isCreateAccount
+                          ? 'Create account'
+                          : 'Sign in'),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: _isSigningIn
+                    ? null
+                    : () {
+                        setState(() {
+                          _isCreateAccount = !_isCreateAccount;
+                          _error = null;
+                        });
+                      },
+                child: Text(
+                  _isCreateAccount
+                      ? 'Already have an account? Sign in'
+                      : 'Create an account',
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'or',
+                style: TextStyle(
+                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: 260,
+                child: OutlinedButton.icon(
+                  onPressed: _isSigningIn ? null : _signInWithGoogle,
+                  icon: const Icon(Icons.login),
+                  label: const Text('Continue with Google'),
                 ),
               ),
               if (_error != null) ...[
