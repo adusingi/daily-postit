@@ -3,7 +3,7 @@ import 'package:daily_postit/main.dart';
 
 void main() {
   test('DailyPostItApp can be constructed', () {
-    const app = DailyPostItApp();
+    const app = DailyPostItApp(firebaseConfigured: false);
     expect(app, isNotNull);
   });
 }

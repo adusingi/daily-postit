@@ -30,16 +30,17 @@ The app will prompt for Google sign-in to enable cross-device sync.
 
 ### Firebase Setup (Local)
 
-Firebase config files are intentionally not committed. Run:
+This repo stores a placeholder `app/lib/firebase_options.dart` to keep CI green
+without committing real API keys. Generate real Firebase config locally:
 
 ```bash
 cd app
 flutterfire configure --project=daily-postit-89948
 ```
 
-This generates:
+This generates (do not commit the real values):
 - `app/firebase.json`
-- `app/lib/firebase_options.dart`
+- `app/lib/firebase_options.dart` (overwrites the placeholder locally)
 - `app/ios/Runner/GoogleService-Info.plist`
 - `app/macos/Runner/GoogleService-Info.plist`
 
